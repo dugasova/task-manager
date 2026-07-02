@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import type { Column, Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import { getColumnAccent } from '../constants'
+import { useInlineEdit } from '../../../hooks/useInlineEdit'
 import TaskCard from './TaskCard'
 import Button from '../../../componrnts/Button'
 import Input from '../../../componrnts/Input'
@@ -29,7 +30,7 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
 
   const [taskContent, setTaskContent] = useState('')
   const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [titleValue, setTitleValue] = useState(column.title)
+  const title = useInlineEdit(column.title, (value) => updateColumnTitle(column.id, value))
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
@@ -46,21 +47,6 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
     if (!content) return
     addTask(column.id, content)
     setTaskContent('')
-  }
-
-  const commitTitle = () => {
-    const title = titleValue.trim()
-    if (title && title !== column.title) {
-      updateColumnTitle(column.id, title)
-    } else {
-      setTitleValue(column.title)
-    }
-    setIsEditingTitle(false)
-  }
-
-  const cancelTitleEdit = () => {
-    setTitleValue(column.title)
-    setIsEditingTitle(false)
   }
 
   return (
@@ -81,13 +67,16 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
         {isEditingTitle ? (
           <Input
             autoFocus
-            value={titleValue}
-            onChange={(e) => setTitleValue(e.target.value)}
-            onBlur={commitTitle}
+            value={title.draft}
+            onChange={(e) => title.setDraft(e.target.value)}
+            onBlur={() => {
+              title.commit()
+              setIsEditingTitle(false)
+            }}
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') commitTitle()
-              if (e.key === 'Escape') cancelTitleEdit()
+              title.handleKeyDown(e)
+              if (e.key === 'Enter' || e.key === 'Escape') setIsEditingTitle(false)
             }}
             className="min-w-0 flex-1"
           />

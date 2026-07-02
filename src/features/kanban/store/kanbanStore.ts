@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Column, Task, Id } from '../types';
 
 interface KanbanState {
@@ -18,96 +19,104 @@ interface KanbanState {
   reorderColumns: (activeId: Id, overId: Id) => void;
 }
 
-export const useKanbanStore = create<KanbanState>((set) => ({
-  columns: [],
-  tasks: [],
+export const useKanbanStore = create<KanbanState>()(
+  persist(
+    (set) => ({
+      columns: [],
+      tasks: [],
 
-  addColumn: (title) => set((state) => ({
-    columns: [...state.columns, { id: crypto.randomUUID(), title }]
-  })),
-  deleteColumn: (id) => set((state) => ({
-    columns: state.columns.filter((column) => column.id !== id)
-  })),
-  updateColumnTitle: (id, title) => set((state) => ({
-    columns: state.columns.map((column) =>
-      column.id === id ? { ...column, title } : column
-    )
-  })),
-  addTask: (columnId, content) => set((state) => ({
-    tasks: [...state.tasks, { id: crypto.randomUUID(), columnId, content }]
-  })),
-  deleteTask: (id) => set((state) => ({
-    tasks: state.tasks.filter((task) => task.id !== id)
-  })),
-  updateTaskContent: (id, content) => set((state) => ({
-    tasks: state.tasks.map((task) =>
-      task.id === id ? { ...task, content } : task
-    )
-  })),
-  updateTaskDescription: (id, description) => set((state) => ({
-    tasks: state.tasks.map((task) =>
-      task.id === id ? { ...task, description } : task
-    )
-  })),
-  addChecklistItem: (taskId, text) => set((state) => ({
-    tasks: state.tasks.map((task) =>
-      task.id === taskId
-        ? {
-            ...task,
-            checklist: [
-              ...(task.checklist ?? []),
-              { id: crypto.randomUUID(), text, done: false },
-            ],
-          }
-        : task
-    )
-  })),
-  toggleChecklistItem: (taskId, itemId) => set((state) => ({
-    tasks: state.tasks.map((task) =>
-      task.id === taskId
-        ? {
-            ...task,
-            checklist: (task.checklist ?? []).map((item) =>
-              item.id === itemId ? { ...item, done: !item.done } : item
-            ),
-          }
-        : task
-    )
-  })),
-  deleteChecklistItem: (taskId, itemId) => set((state) => ({
-    tasks: state.tasks.map((task) =>
-      task.id === taskId
-        ? { ...task, checklist: (task.checklist ?? []).filter((item) => item.id !== itemId) }
-        : task
-    )
-  })),
-  moveTask: (taskId, targetColumnId, targetIndex) =>
-    set((state) => {
-      const tasks = [...state.tasks];
-      const taskIndex = tasks.findIndex((task) => task.id === taskId);
+      addColumn: (title) => set((state) => ({
+        columns: [...state.columns, { id: crypto.randomUUID(), title }]
+      })),
+      deleteColumn: (id) => set((state) => ({
+        columns: state.columns.filter((column) => column.id !== id)
+      })),
+      updateColumnTitle: (id, title) => set((state) => ({
+        columns: state.columns.map((column) =>
+          column.id === id ? { ...column, title } : column
+        )
+      })),
+      addTask: (columnId, content) => set((state) => ({
+        tasks: [...state.tasks, { id: crypto.randomUUID(), columnId, content }]
+      })),
+      deleteTask: (id) => set((state) => ({
+        tasks: state.tasks.filter((task) => task.id !== id)
+      })),
+      updateTaskContent: (id, content) => set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, content } : task
+        )
+      })),
+      updateTaskDescription: (id, description) => set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, description } : task
+        )
+      })),
+      addChecklistItem: (taskId, text) => set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                checklist: [
+                  ...(task.checklist ?? []),
+                  { id: crypto.randomUUID(), text, done: false },
+                ],
+              }
+            : task
+        )
+      })),
+      toggleChecklistItem: (taskId, itemId) => set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                checklist: (task.checklist ?? []).map((item) =>
+                  item.id === itemId ? { ...item, done: !item.done } : item
+                ),
+              }
+            : task
+        )
+      })),
+      deleteChecklistItem: (taskId, itemId) => set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === taskId
+            ? { ...task, checklist: (task.checklist ?? []).filter((item) => item.id !== itemId) }
+            : task
+        )
+      })),
+      moveTask: (taskId, targetColumnId, targetIndex) =>
+        set((state) => {
+          const tasks = [...state.tasks];
+          const taskIndex = tasks.findIndex((task) => task.id === taskId);
 
-      if (taskIndex === -1) return {};
+          if (taskIndex === -1) return {};
 
-      const [movedTask] = tasks.splice(taskIndex, 1);
-      tasks.splice(targetIndex, 0, movedTask);
+          const [movedTask] = tasks.splice(taskIndex, 1);
+          tasks.splice(targetIndex, 0, movedTask);
 
-      const updatedTasks = tasks.map((task) =>
-        task.id === taskId ? { ...task, columnId: targetColumnId } : task
-      );
+          const updatedTasks = tasks.map((task) =>
+            task.id === taskId ? { ...task, columnId: targetColumnId } : task
+          );
 
-      return { tasks: updatedTasks };
+          return { tasks: updatedTasks };
+        }),
+      reorderColumns: (activeId, overId) =>
+        set((state) => {
+          const columns = [...state.columns];
+          const activeIndex = columns.findIndex((column) => column.id === activeId);
+          const overIndex = columns.findIndex((column) => column.id === overId);
+
+          if (activeIndex === -1 || overIndex === -1) return {};
+
+          const [activeColumn] = columns.splice(activeIndex, 1);
+          columns.splice(overIndex, 0, activeColumn);
+
+          return { columns };
+        }),
     }),
-  reorderColumns: (activeId, overId) =>
-    set((state) => {
-      const columns = [...state.columns];
-      const activeIndex = columns.findIndex((column) => column.id === activeId);
-      const overIndex = columns.findIndex((column) => column.id === overId);
-
-      if (activeIndex === -1 || overIndex === -1) return {};
-
-      const [activeColumn] = columns.splice(activeIndex, 1);
-      columns.splice(overIndex, 0, activeColumn);
-
-      return { columns };
-    }),
-}));
+    {
+      name: 'kanban-storage',
+      partialize: (state) => ({ columns: state.columns, tasks: state.tasks }),
+    }
+  )
+);

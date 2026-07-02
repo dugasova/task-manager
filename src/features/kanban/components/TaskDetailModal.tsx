@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom'
 import type { Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import { getColumnAccent } from '../constants'
-import Button from '../../../componrnts/Button'
+import { useInlineEdit } from '../../../hooks/useInlineEdit'
+import TaskChecklist from './TaskChecklist'
 import Input from '../../../componrnts/Input'
 
 interface TaskDetailModalProps {
@@ -18,13 +19,12 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
   )
   const updateTaskContent = useKanbanStore((state) => state.updateTaskContent)
   const updateTaskDescription = useKanbanStore((state) => state.updateTaskDescription)
-  const addChecklistItem = useKanbanStore((state) => state.addChecklistItem)
-  const toggleChecklistItem = useKanbanStore((state) => state.toggleChecklistItem)
-  const deleteChecklistItem = useKanbanStore((state) => state.deleteChecklistItem)
 
-  const [titleValue, setTitleValue] = useState(task?.content ?? '')
+  const title = useInlineEdit(task?.content ?? '', (value) => {
+    if (task) updateTaskContent(task.id, value)
+  })
+
   const [descriptionValue, setDescriptionValue] = useState(task?.description ?? '')
-  const [newItemText, setNewItemText] = useState('')
 
   useEffect(() => {
     if (!task) onClose()
@@ -42,31 +42,11 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
 
   const accent = getColumnAccent(Math.max(columnIndex, 0))
 
-  const commitTitle = () => {
-    const title = titleValue.trim()
-    if (title && title !== task.content) {
-      updateTaskContent(task.id, title)
-    } else {
-      setTitleValue(task.content)
-    }
-  }
-
   const commitDescription = () => {
     if (descriptionValue !== (task.description ?? '')) {
       updateTaskDescription(task.id, descriptionValue)
     }
   }
-
-  const handleAddItem = () => {
-    const text = newItemText.trim()
-    if (!text) return
-    addChecklistItem(task.id, text)
-    setNewItemText('')
-  }
-
-  const checklist = task.checklist ?? []
-  const doneCount = checklist.filter((item) => item.done).length
-  const progress = checklist.length > 0 ? (doneCount / checklist.length) * 100 : 0
 
   return createPortal(
     <div
@@ -82,10 +62,10 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
         <div className="flex flex-col overflow-y-auto p-6">
           <div className="mb-4 flex items-start justify-between gap-2">
             <Input
-              value={titleValue}
-              onChange={(e) => setTitleValue(e.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+              value={title.draft}
+              onChange={(e) => title.setDraft(e.target.value)}
+              onBlur={title.commit}
+              onKeyDown={title.handleKeyDown}
               className="flex-1 text-base font-semibold"
             />
             <button
@@ -112,68 +92,7 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
             />
           </div>
 
-          <div>
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Checklist{checklist.length > 0 ? ` (${doneCount}/${checklist.length})` : ''}
-              </h3>
-            </div>
-
-            {checklist.length > 0 && (
-              <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-                <div
-                  className={`h-full rounded-full transition-all ${accent.bar}`}
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            )}
-
-            <div className="mb-2 flex flex-col gap-1">
-              {checklist.map((item) => (
-                <div key={item.id} className="group flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={item.done}
-                    onChange={() => toggleChecklistItem(task.id, item.id)}
-                    className="shrink-0 accent-violet-500"
-                  />
-                  <span
-                    className={`flex-1 text-sm ${
-                      item.done
-                        ? 'text-slate-400 line-through dark:text-slate-500'
-                        : 'text-slate-800 dark:text-slate-100'
-                    }`}
-                  >
-                    {item.text}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => deleteChecklistItem(task.id, item.id)}
-                    aria-label="Delete checklist item"
-                    className="shrink-0 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 group-hover:opacity-100"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <Input
-                value={newItemText}
-                onChange={(e) => setNewItemText(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-                placeholder="Add an item..."
-                className="flex-1"
-              />
-              <Button
-                onClick={handleAddItem}
-                className="bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white hover:from-violet-500 hover:to-fuchsia-400"
-              >
-                Add
-              </Button>
-            </div>
-          </div>
+          <TaskChecklist taskId={task.id} checklist={task.checklist ?? []} accent={accent} />
         </div>
       </div>
     </div>,
