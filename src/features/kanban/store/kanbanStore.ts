@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { Column, Task, Id } from '../types';
+import type { Column, Task, Label, Id } from '../types';
 import { generateId } from '../../../lib/id';
 
 const safeStorage = createJSONStorage(() => ({
@@ -30,6 +30,7 @@ const safeStorage = createJSONStorage(() => ({
 interface KanbanState {
   columns: Column[];
   tasks: Task[];
+  labels: Label[];
   addColumn: (title: string) => void;
   deleteColumn: (id: Id) => void;
   updateColumnTitle: (id: Id, title: string) => void;
@@ -40,6 +41,9 @@ interface KanbanState {
   addChecklistItem: (taskId: Id, text: string) => void;
   toggleChecklistItem: (taskId: Id, itemId: Id) => void;
   deleteChecklistItem: (taskId: Id, itemId: Id) => void;
+  addLabel: (name: string, color: string) => Id;
+  deleteLabel: (id: Id) => void;
+  toggleTaskLabel: (taskId: Id, labelId: Id) => void;
   moveTask: (taskId: Id, targetColumnId: Id, targetIndex: number) => void;
   reorderColumns: (activeId: Id, overId: Id) => void;
 }
@@ -49,6 +53,7 @@ export const useKanbanStore = create<KanbanState>()(
     (set) => ({
       columns: [],
       tasks: [],
+      labels: [],
 
       addColumn: (title) => set((state) => ({
         columns: [...state.columns, { id: generateId(), title }]
@@ -109,6 +114,31 @@ export const useKanbanStore = create<KanbanState>()(
             : task
         )
       })),
+      addLabel: (name, color) => {
+        const id = generateId();
+        set((state) => ({ labels: [...state.labels, { id, name, color }] }));
+        return id;
+      },
+      deleteLabel: (id) => set((state) => ({
+        labels: state.labels.filter((label) => label.id !== id),
+        tasks: state.tasks.map((task) =>
+          task.labelIds?.includes(id)
+            ? { ...task, labelIds: task.labelIds.filter((labelId) => labelId !== id) }
+            : task
+        )
+      })),
+      toggleTaskLabel: (taskId, labelId) => set((state) => ({
+        tasks: state.tasks.map((task) => {
+          if (task.id !== taskId) return task
+          const labelIds = task.labelIds ?? []
+          return {
+            ...task,
+            labelIds: labelIds.includes(labelId)
+              ? labelIds.filter((id) => id !== labelId)
+              : [...labelIds, labelId],
+          }
+        })
+      })),
       moveTask: (taskId, targetColumnId, targetIndex) =>
         set((state) => {
           const tasks = [...state.tasks];
@@ -142,7 +172,7 @@ export const useKanbanStore = create<KanbanState>()(
     {
       name: 'kanban-storage',
       storage: safeStorage,
-      partialize: (state) => ({ columns: state.columns, tasks: state.tasks }),
+      partialize: (state) => ({ columns: state.columns, tasks: state.tasks, labels: state.labels }),
     }
   )
 );

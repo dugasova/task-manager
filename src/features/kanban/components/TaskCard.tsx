@@ -1,8 +1,9 @@
+import { useMemo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Id, Task } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
-import type { ColumnAccent } from '../constants'
+import { getLabelColor, type ColumnAccent } from '../constants'
 
 interface TaskCardProps {
   task: Task
@@ -12,6 +13,12 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
   const deleteTask = useKanbanStore((state) => state.deleteTask)
+  const allLabels = useKanbanStore((state) => state.labels)
+  const labelIds = task.labelIds
+  const labels = useMemo(
+    () => (labelIds && labelIds.length > 0 ? allLabels.filter((label) => labelIds.includes(label.id)) : []),
+    [allLabels, labelIds],
+  )
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
@@ -45,6 +52,18 @@ export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
       <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${accent.dot}`} />
 
       <div className="min-w-0 flex-1">
+        {labels.length > 0 && (
+          <div className="mb-1.5 flex flex-wrap gap-1">
+            {labels.map((label) => (
+              <span
+                key={label.id}
+                className={`rounded-full px-2 py-0.5 text-xs font-semibold ${getLabelColor(label.color).chip}`}
+              >
+                {label.name}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="break-words text-sm text-slate-800 dark:text-slate-100">{task.content}</p>
         {checklist.length > 0 && (
           <div className="mt-2 flex items-center gap-2">

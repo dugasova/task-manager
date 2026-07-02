@@ -5,6 +5,7 @@ import { useKanbanStore } from '../store/kanbanStore'
 import { getColumnAccent } from '../constants'
 import { useInlineEdit } from '../../../hooks/useInlineEdit'
 import TaskChecklist from './TaskChecklist'
+import TaskLabels from './TaskLabels'
 import Input from '../../../componrnts/Input'
 
 interface TaskDetailModalProps {
@@ -112,6 +113,8 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
               ✕
             </button>
           </div>
+
+          <TaskLabels taskId={task.id} labelIds={task.labelIds ?? []} />
 
           <div className="mb-5">
             <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
