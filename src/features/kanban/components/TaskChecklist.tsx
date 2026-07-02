@@ -67,7 +67,7 @@ export default function TaskChecklist({ taskId, checklist, accent }: TaskCheckli
               type="button"
               onClick={() => deleteChecklistItem(taskId, item.id)}
               aria-label="Delete checklist item"
-              className="shrink-0 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100"
+              className="-m-1 shrink-0 p-1 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100"
             >
               ✕
             </button>

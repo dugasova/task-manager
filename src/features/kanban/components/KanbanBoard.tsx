@@ -103,14 +103,14 @@ export default function KanbanBoard() {
           </button>
         </div>
 
-        <div className="mb-5 flex gap-2">
+        <div className="mb-5 flex flex-wrap gap-2">
           <Input
             value={columnTitle}
             onChange={(e) => setColumnTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddColumn()}
             placeholder="New column title..."
             aria-label="New column title"
-            className="w-64"
+            className="w-full min-w-0 sm:w-64"
           />
           <Button
             onClick={handleAddColumn}

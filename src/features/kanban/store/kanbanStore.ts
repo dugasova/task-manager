@@ -1,6 +1,31 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Column, Task, Id } from '../types';
+import { generateId } from '../../../lib/id';
+
+const safeStorage = createJSONStorage(() => ({
+  getItem: (name: string) => {
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: string) => {
+    try {
+      localStorage.setItem(name, value);
+    } catch {
+      // storage unavailable (private mode, full quota) - state stays in-memory only
+    }
+  },
+  removeItem: (name: string) => {
+    try {
+      localStorage.removeItem(name);
+    } catch {
+      // ignore
+    }
+  },
+}));
 
 interface KanbanState {
   columns: Column[];
@@ -26,7 +51,7 @@ export const useKanbanStore = create<KanbanState>()(
       tasks: [],
 
       addColumn: (title) => set((state) => ({
-        columns: [...state.columns, { id: crypto.randomUUID(), title }]
+        columns: [...state.columns, { id: generateId(), title }]
       })),
       deleteColumn: (id) => set((state) => ({
         columns: state.columns.filter((column) => column.id !== id)
@@ -37,7 +62,7 @@ export const useKanbanStore = create<KanbanState>()(
         )
       })),
       addTask: (columnId, content) => set((state) => ({
-        tasks: [...state.tasks, { id: crypto.randomUUID(), columnId, content }]
+        tasks: [...state.tasks, { id: generateId(), columnId, content }]
       })),
       deleteTask: (id) => set((state) => ({
         tasks: state.tasks.filter((task) => task.id !== id)
@@ -59,7 +84,7 @@ export const useKanbanStore = create<KanbanState>()(
                 ...task,
                 checklist: [
                   ...(task.checklist ?? []),
-                  { id: crypto.randomUUID(), text, done: false },
+                  { id: generateId(), text, done: false },
                 ],
               }
             : task
@@ -116,6 +141,7 @@ export const useKanbanStore = create<KanbanState>()(
     }),
     {
       name: 'kanban-storage',
+      storage: safeStorage,
       partialize: (state) => ({ columns: state.columns, tasks: state.tasks }),
     }
   )

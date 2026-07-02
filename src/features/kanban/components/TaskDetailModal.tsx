@@ -107,7 +107,7 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="shrink-0 text-slate-400 transition-colors hover:text-rose-500"
+              className="-m-1 shrink-0 p-1 text-slate-400 transition-colors hover:text-rose-500"
             >
               ✕
             </button>

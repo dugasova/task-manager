@@ -62,7 +62,7 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
       <div
         {...attributes}
         {...listeners}
-        className="flex cursor-grab items-center justify-between gap-2 px-3 pt-3 pb-2 active:cursor-grabbing"
+        className="flex touch-none cursor-grab items-center justify-between gap-2 px-3 pt-3 pb-2 active:cursor-grabbing"
       >
         {isEditingTitle ? (
           <Input
@@ -107,7 +107,7 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
           onClick={() => deleteColumn(column.id)}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label="Delete column"
-          className="shrink-0 text-slate-400 transition-colors hover:text-rose-500"
+          className="-m-1 shrink-0 p-1 text-slate-400 transition-colors hover:text-rose-500"
         >
           ✕
         </button>
