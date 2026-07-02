@@ -1,13 +1,18 @@
 import { useMemo, useState } from 'react'
 import {
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   closestCorners,
   useSensor,
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
 import type { Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import { useTheme } from '../../../hooks/useTheme'
@@ -32,6 +37,7 @@ export default function KanbanBoard() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
   const handleAddColumn = () => {
@@ -103,6 +109,7 @@ export default function KanbanBoard() {
             onChange={(e) => setColumnTitle(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddColumn()}
             placeholder="New column title..."
+            aria-label="New column title"
             className="w-64"
           />
           <Button

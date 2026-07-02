@@ -32,8 +32,13 @@ export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
       style={style}
       {...attributes}
       {...listeners}
+      aria-label={`Task: ${task.content}`}
       onClick={() => onSelect(task.id)}
-      className={`group flex cursor-pointer items-start gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-violet-300 dark:bg-slate-800 dark:ring-slate-700 dark:hover:ring-violet-500/60 ${
+      onKeyDown={(e) => {
+        listeners?.onKeyDown?.(e)
+        if (e.key === 'Enter') onSelect(task.id)
+      }}
+      className={`group flex cursor-pointer items-start gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200 transition-all hover:-translate-y-0.5 hover:shadow-md hover:ring-violet-300 focus-visible:outline-2 focus-visible:outline-violet-500 dark:bg-slate-800 dark:ring-slate-700 dark:hover:ring-violet-500/60 ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
@@ -63,7 +68,7 @@ export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
         }}
         onPointerDown={(e) => e.stopPropagation()}
         aria-label="Delete task"
-        className="shrink-0 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 group-hover:opacity-100"
+        className="shrink-0 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100"
       >
         ✕
       </button>

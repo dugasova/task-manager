@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
@@ -25,14 +25,43 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
   })
 
   const [descriptionValue, setDescriptionValue] = useState(task?.description ?? '')
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!task) onClose()
   }, [task, onClose])
 
   useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null
+    return () => {
+      previouslyFocused?.focus()
+    }
+  }, [])
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        )
+        if (focusable.length === 0) return
+
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
@@ -54,6 +83,10 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Task details"
         className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-slate-900"
         onClick={(e) => e.stopPropagation()}
       >
@@ -62,6 +95,8 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
         <div className="flex flex-col overflow-y-auto p-6">
           <div className="mb-4 flex items-start justify-between gap-2">
             <Input
+              autoFocus
+              aria-label="Task title"
               value={title.draft}
               onChange={(e) => title.setDraft(e.target.value)}
               onBlur={title.commit}
@@ -87,6 +122,7 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
               onChange={(e) => setDescriptionValue(e.target.value)}
               onBlur={commitDescription}
               placeholder="Add a more detailed description..."
+              aria-label="Task description"
               rows={4}
               className="w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition-colors placeholder:text-slate-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-400"
             />

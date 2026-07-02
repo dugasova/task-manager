@@ -46,26 +46,28 @@ export default function TaskChecklist({ taskId, checklist, accent }: TaskCheckli
       <div className="mb-2 flex flex-col gap-1">
         {checklist.map((item) => (
           <div key={item.id} className="group flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={item.done}
-              onChange={() => toggleChecklistItem(taskId, item.id)}
-              className="shrink-0 accent-violet-500"
-            />
-            <span
-              className={`flex-1 text-sm ${
-                item.done
-                  ? 'text-slate-400 line-through dark:text-slate-500'
-                  : 'text-slate-800 dark:text-slate-100'
-              }`}
-            >
-              {item.text}
-            </span>
+            <label className="flex flex-1 min-w-0 cursor-pointer items-center gap-2">
+              <input
+                type="checkbox"
+                checked={item.done}
+                onChange={() => toggleChecklistItem(taskId, item.id)}
+                className="shrink-0 accent-violet-500"
+              />
+              <span
+                className={`flex-1 text-sm ${
+                  item.done
+                    ? 'text-slate-400 line-through dark:text-slate-500'
+                    : 'text-slate-800 dark:text-slate-100'
+                }`}
+              >
+                {item.text}
+              </span>
+            </label>
             <button
               type="button"
               onClick={() => deleteChecklistItem(taskId, item.id)}
               aria-label="Delete checklist item"
-              className="shrink-0 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 group-hover:opacity-100"
+              className="shrink-0 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100"
             >
               ✕
             </button>
@@ -79,6 +81,7 @@ export default function TaskChecklist({ taskId, checklist, accent }: TaskCheckli
           onChange={(e) => setNewItemText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
           placeholder="Add an item..."
+          aria-label="New checklist item"
           className="flex-1"
         />
         <Button

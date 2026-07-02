@@ -67,6 +67,7 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
         {isEditingTitle ? (
           <Input
             autoFocus
+            aria-label="Column title"
             value={title.draft}
             onChange={(e) => title.setDraft(e.target.value)}
             onBlur={() => {
@@ -83,9 +84,14 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <h2
+              role="button"
+              tabIndex={0}
               onClick={() => setIsEditingTitle(true)}
               onPointerDown={(e) => e.stopPropagation()}
-              className="truncate font-semibold text-slate-700 dark:text-slate-100"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') setIsEditingTitle(true)
+              }}
+              className="truncate rounded font-semibold text-slate-700 focus-visible:outline-2 focus-visible:outline-violet-500 dark:text-slate-100"
             >
               {column.title}
             </h2>
@@ -126,6 +132,7 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
           onChange={(e) => setTaskContent(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddTask()}
           placeholder="New task..."
+          aria-label="New task"
           className="flex-1"
         />
         <Button onClick={handleAddTask} className={`text-white ${accent.bar} hover:brightness-110`}>
