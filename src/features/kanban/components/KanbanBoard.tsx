@@ -8,8 +8,10 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core'
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
+import type { Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import KanbanColumn from './KanbanColumn'
+import TaskDetailModal from './TaskDetailModal'
 import Button from '../../../componrnts/Button'
 import Input from '../../../componrnts/Input'
 
@@ -21,6 +23,7 @@ export default function KanbanBoard() {
   const reorderColumns = useKanbanStore((state) => state.reorderColumns)
 
   const [columnTitle, setColumnTitle] = useState('')
+  const [selectedTaskId, setSelectedTaskId] = useState<Id | null>(null)
 
   const columnIds = useMemo(() => columns.map((column) => column.id), [columns])
 
@@ -79,11 +82,15 @@ export default function KanbanBoard() {
         <div className="grid flex-1 auto-cols-[18rem] grid-flow-col gap-4 overflow-x-auto pb-4">
           <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
             {columns.map((column) => (
-              <KanbanColumn key={column.id} column={column} />
+              <KanbanColumn key={column.id} column={column} onSelectTask={setSelectedTaskId} />
             ))}
           </SortableContext>
         </div>
       </DndContext>
+
+      {selectedTaskId !== null && (
+        <TaskDetailModal taskId={selectedTaskId} onClose={() => setSelectedTaskId(null)} />
+      )}
     </div>
   )
 }

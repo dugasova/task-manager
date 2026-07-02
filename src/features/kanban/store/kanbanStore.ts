@@ -6,9 +6,14 @@ interface KanbanState {
   tasks: Task[];
   addColumn: (title: string) => void;
   deleteColumn: (id: Id) => void;
+  updateColumnTitle: (id: Id, title: string) => void;
   addTask: (columnId: Id, content: string) => void;
   deleteTask: (id: Id) => void;
   updateTaskContent: (id: Id, content: string) => void;
+  updateTaskDescription: (id: Id, description: string) => void;
+  addChecklistItem: (taskId: Id, text: string) => void;
+  toggleChecklistItem: (taskId: Id, itemId: Id) => void;
+  deleteChecklistItem: (taskId: Id, itemId: Id) => void;
   moveTask: (taskId: Id, targetColumnId: Id, targetIndex: number) => void;
   reorderColumns: (activeId: Id, overId: Id) => void;
 }
@@ -23,6 +28,11 @@ export const useKanbanStore = create<KanbanState>((set) => ({
   deleteColumn: (id) => set((state) => ({
     columns: state.columns.filter((column) => column.id !== id)
   })),
+  updateColumnTitle: (id, title) => set((state) => ({
+    columns: state.columns.map((column) =>
+      column.id === id ? { ...column, title } : column
+    )
+  })),
   addTask: (columnId, content) => set((state) => ({
     tasks: [...state.tasks, { id: crypto.randomUUID(), columnId, content }]
   })),
@@ -32,6 +42,43 @@ export const useKanbanStore = create<KanbanState>((set) => ({
   updateTaskContent: (id, content) => set((state) => ({
     tasks: state.tasks.map((task) =>
       task.id === id ? { ...task, content } : task
+    )
+  })),
+  updateTaskDescription: (id, description) => set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === id ? { ...task, description } : task
+    )
+  })),
+  addChecklistItem: (taskId, text) => set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            checklist: [
+              ...(task.checklist ?? []),
+              { id: crypto.randomUUID(), text, done: false },
+            ],
+          }
+        : task
+    )
+  })),
+  toggleChecklistItem: (taskId, itemId) => set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            checklist: (task.checklist ?? []).map((item) =>
+              item.id === itemId ? { ...item, done: !item.done } : item
+            ),
+          }
+        : task
+    )
+  })),
+  deleteChecklistItem: (taskId, itemId) => set((state) => ({
+    tasks: state.tasks.map((task) =>
+      task.id === taskId
+        ? { ...task, checklist: (task.checklist ?? []).filter((item) => item.id !== itemId) }
+        : task
     )
   })),
   moveTask: (taskId, targetColumnId, targetIndex) =>
@@ -64,6 +111,3 @@ export const useKanbanStore = create<KanbanState>((set) => ({
       return { columns };
     }),
 }));
-
-
-

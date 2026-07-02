@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import type { Column } from '../types'
+import type { Column, Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import TaskCard from './TaskCard'
 import Button from '../../../componrnts/Button'
@@ -9,9 +9,10 @@ import Input from '../../../componrnts/Input'
 
 interface KanbanColumnProps {
   column: Column
+  onSelectTask: (taskId: Id) => void
 }
 
-export default function KanbanColumn({ column }: KanbanColumnProps) {
+export default function KanbanColumn({ column, onSelectTask }: KanbanColumnProps) {
   const allTasks = useKanbanStore((state) => state.tasks)
   const tasks = useMemo(
     () => allTasks.filter((task) => task.columnId === column.id),
@@ -20,8 +21,11 @@ export default function KanbanColumn({ column }: KanbanColumnProps) {
   const taskIds = useMemo(() => tasks.map((task) => task.id), [tasks])
   const addTask = useKanbanStore((state) => state.addTask)
   const deleteColumn = useKanbanStore((state) => state.deleteColumn)
+  const updateColumnTitle = useKanbanStore((state) => state.updateColumnTitle)
 
   const [taskContent, setTaskContent] = useState('')
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [titleValue, setTitleValue] = useState(column.title)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column.id,
@@ -40,6 +44,21 @@ export default function KanbanColumn({ column }: KanbanColumnProps) {
     setTaskContent('')
   }
 
+  const commitTitle = () => {
+    const title = titleValue.trim()
+    if (title && title !== column.title) {
+      updateColumnTitle(column.id, title)
+    } else {
+      setTitleValue(column.title)
+    }
+    setIsEditingTitle(false)
+  }
+
+  const cancelTitleEdit = () => {
+    setTitleValue(column.title)
+    setIsEditingTitle(false)
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -53,7 +72,28 @@ export default function KanbanColumn({ column }: KanbanColumnProps) {
         {...listeners}
         className="mb-3 flex items-center justify-between gap-2"
       >
-        <h2 className="truncate font-semibold text-gray-700">{column.title}</h2>
+        {isEditingTitle ? (
+          <Input
+            autoFocus
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onBlur={commitTitle}
+            onPointerDown={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitTitle()
+              if (e.key === 'Escape') cancelTitleEdit()
+            }}
+            className="min-w-0 flex-1"
+          />
+        ) : (
+          <h2
+            onClick={() => setIsEditingTitle(true)}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="truncate font-semibold text-gray-700"
+          >
+            {column.title}
+          </h2>
+        )}
         <button
           type="button"
           onClick={() => deleteColumn(column.id)}
@@ -68,7 +108,7 @@ export default function KanbanColumn({ column }: KanbanColumnProps) {
       <div className="flex flex-1 flex-col gap-2 overflow-y-auto">
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} onSelect={onSelectTask} />
           ))}
         </SortableContext>
       </div>
