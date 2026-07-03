@@ -17,6 +17,8 @@ export interface Label {
   color: string;
 }
 
+export type Priority = 'low' | 'medium' | 'high';
+
 export interface Task {
   id: Id;
   columnId: Id;
@@ -24,4 +26,6 @@ export interface Task {
   description?: string;
   checklist?: ChecklistItem[];
   labelIds?: Id[];
+  priority?: Priority;
+  archived?: boolean;
 }

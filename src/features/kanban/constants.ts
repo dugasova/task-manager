@@ -93,3 +93,35 @@ export const LABEL_COLORS: LabelColor[] = [
 export function getLabelColor(key: string): LabelColor {
   return LABEL_COLORS.find((color) => color.key === key) ?? LABEL_COLORS[0]
 }
+
+export interface PriorityConfig {
+  key: 'low' | 'medium' | 'high'
+  label: string
+  dot: string
+  chip: string
+}
+
+export const PRIORITIES: PriorityConfig[] = [
+  {
+    key: 'low',
+    label: 'Low',
+    dot: 'bg-slate-400',
+    chip: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300',
+  },
+  {
+    key: 'medium',
+    label: 'Medium',
+    dot: 'bg-amber-500',
+    chip: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
+  },
+  {
+    key: 'high',
+    label: 'High',
+    dot: 'bg-rose-500',
+    chip: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300',
+  },
+]
+
+export function getPriorityConfig(key?: string): PriorityConfig | undefined {
+  return PRIORITIES.find((priority) => priority.key === key)
+}

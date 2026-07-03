@@ -1,5 +1,5 @@
 import KanbanBoard from './features/kanban/components/KanbanBoard'
-import ErrorBoundary from './componrnts/ErrorBoundary'
+import ErrorBoundary from './components/ErrorBoundary'
 
 export default function App() {
   return (

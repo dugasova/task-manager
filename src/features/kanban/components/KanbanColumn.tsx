@@ -6,8 +6,8 @@ import { useKanbanStore } from '../store/kanbanStore'
 import { getColumnAccent } from '../constants'
 import { useInlineEdit } from '../../../hooks/useInlineEdit'
 import TaskCard from './TaskCard'
-import Button from '../../../componrnts/Button'
-import Input from '../../../componrnts/Input'
+import Button from '../../../components/Button'
+import Input from '../../../components/Input'
 
 interface KanbanColumnProps {
   column: Column
@@ -18,7 +18,7 @@ interface KanbanColumnProps {
 export default function KanbanColumn({ column, accentIndex, onSelectTask }: KanbanColumnProps) {
   const allTasks = useKanbanStore((state) => state.tasks)
   const tasks = useMemo(
-    () => allTasks.filter((task) => task.columnId === column.id),
+    () => allTasks.filter((task) => task.columnId === column.id && !task.archived),
     [allTasks, column.id],
   )
   const taskIds = useMemo(() => tasks.map((task) => task.id), [tasks])
@@ -53,9 +53,8 @@ export default function KanbanColumn({ column, accentIndex, onSelectTask }: Kanb
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex max-h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/80 ${
-        isDragging ? 'opacity-50' : ''
-      }`}
+      className={`flex max-h-full w-72 shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-900/80 ${isDragging ? 'opacity-50' : ''
+        }`}
     >
       <div className={`h-1.5 shrink-0 ${accent.bar}`} />
 

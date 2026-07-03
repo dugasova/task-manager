@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Id, Task } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
-import { getLabelColor, type ColumnAccent } from '../constants'
+import { getLabelColor, getPriorityConfig, type ColumnAccent } from '../constants'
 
 interface TaskCardProps {
   task: Task
@@ -12,7 +12,8 @@ interface TaskCardProps {
 }
 
 export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
-  const deleteTask = useKanbanStore((state) => state.deleteTask)
+  const archiveTask = useKanbanStore((state) => state.archiveTask)
+  const priority = getPriorityConfig(task.priority)
   const allLabels = useKanbanStore((state) => state.labels)
   const labelIds = task.labelIds
   const labels = useMemo(
@@ -52,8 +53,14 @@ export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
       <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${accent.dot}`} />
 
       <div className="min-w-0 flex-1">
-        {labels.length > 0 && (
+        {(labels.length > 0 || priority) && (
           <div className="mb-1.5 flex flex-wrap gap-1">
+            {priority && (
+              <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${priority.chip}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${priority.dot}`} />
+                {priority.label}
+              </span>
+            )}
             {labels.map((label) => (
               <span
                 key={label.id}
@@ -83,10 +90,10 @@ export default function TaskCard({ task, accent, onSelect }: TaskCardProps) {
         type="button"
         onClick={(e) => {
           e.stopPropagation()
-          deleteTask(task.id)
+          archiveTask(task.id)
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        aria-label="Delete task"
+        aria-label="Archive task"
         className="-m-1 shrink-0 p-1 text-slate-400 opacity-0 transition-opacity hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100"
       >
         ✕

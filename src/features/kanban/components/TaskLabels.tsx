@@ -2,8 +2,8 @@ import { useState } from 'react'
 import type { Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import { LABEL_COLORS, getLabelColor } from '../constants'
-import Button from '../../../componrnts/Button'
-import Input from '../../../componrnts/Input'
+import Button from '../../../components/Button'
+import Input from '../../../components/Input'
 
 interface TaskLabelsProps {
   taskId: Id
@@ -93,9 +93,8 @@ export default function TaskLabels({ taskId, labelIds }: TaskLabelsProps) {
                 onClick={() => setNewLabelColor(color.key)}
                 aria-label={`Color ${color.key}`}
                 aria-pressed={newLabelColor === color.key}
-                className={`h-5 w-5 shrink-0 rounded-full ${color.swatch} ${
-                  newLabelColor === color.key ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-offset-slate-900' : ''
-                }`}
+                className={`h-5 w-5 shrink-0 rounded-full ${color.swatch} ${newLabelColor === color.key ? 'ring-2 ring-offset-2 ring-slate-400 dark:ring-offset-slate-900' : ''
+                  }`}
               />
             ))}
           </div>

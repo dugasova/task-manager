@@ -2,8 +2,8 @@ import { useState } from 'react'
 import type { ChecklistItem, Id } from '../types'
 import type { ColumnAccent } from '../constants'
 import { useKanbanStore } from '../store/kanbanStore'
-import Button from '../../../componrnts/Button'
-import Input from '../../../componrnts/Input'
+import Button from '../../../components/Button'
+import Input from '../../../components/Input'
 
 interface TaskChecklistProps {
   taskId: Id
@@ -54,11 +54,10 @@ export default function TaskChecklist({ taskId, checklist, accent }: TaskCheckli
                 className="shrink-0 accent-violet-500"
               />
               <span
-                className={`flex-1 text-sm ${
-                  item.done
+                className={`flex-1 text-sm ${item.done
                     ? 'text-slate-400 line-through dark:text-slate-500'
                     : 'text-slate-800 dark:text-slate-100'
-                }`}
+                  }`}
               >
                 {item.text}
               </span>

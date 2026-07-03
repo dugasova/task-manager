@@ -6,7 +6,8 @@ import { getColumnAccent } from '../constants'
 import { useInlineEdit } from '../../../hooks/useInlineEdit'
 import TaskChecklist from './TaskChecklist'
 import TaskLabels from './TaskLabels'
-import Input from '../../../componrnts/Input'
+import TaskPriority from './TaskPriority'
+import Input from '../../../components/Input'
 
 interface TaskDetailModalProps {
   taskId: Id
@@ -20,6 +21,7 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
   )
   const updateTaskContent = useKanbanStore((state) => state.updateTaskContent)
   const updateTaskDescription = useKanbanStore((state) => state.updateTaskDescription)
+  const archiveTask = useKanbanStore((state) => state.archiveTask)
 
   const title = useInlineEdit(task?.content ?? '', (value) => {
     if (task) updateTaskContent(task.id, value)
@@ -113,6 +115,19 @@ export default function TaskDetailModal({ taskId, onClose }: TaskDetailModalProp
               ✕
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              archiveTask(task.id)
+              onClose()
+            }}
+            className="mb-5 self-start rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 transition-colors hover:border-rose-300 hover:text-rose-500 dark:border-slate-700 dark:text-slate-400 dark:hover:border-rose-500 dark:hover:text-rose-400"
+          >
+            Archive
+          </button>
+
+          <TaskPriority taskId={task.id} priority={task.priority} />
 
           <TaskLabels taskId={task.id} labelIds={task.labelIds ?? []} />
 
