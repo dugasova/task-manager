@@ -13,6 +13,7 @@ import {
   horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
+import { useShallow } from 'zustand/react/shallow'
 import type { Id } from '../types'
 import { useKanbanStore } from '../store/kanbanStore'
 import { useTheme } from '../../../hooks/useTheme'
@@ -23,15 +24,18 @@ import Button from '../../../components/Button'
 import Input from '../../../components/Input'
 
 export default function KanbanBoard() {
-  const columns = useKanbanStore((state) => state.columns)
-  const tasks = useKanbanStore((state) => state.tasks)
-  const addColumn = useKanbanStore((state) => state.addColumn)
-  const moveTask = useKanbanStore((state) => state.moveTask)
-  const reorderColumns = useKanbanStore((state) => state.reorderColumns)
-  const undo = useKanbanStore((state) => state.undo)
-  const redo = useKanbanStore((state) => state.redo)
-  const canUndo = useKanbanStore((state) => state.past.length > 0)
-  const canRedo = useKanbanStore((state) => state.future.length > 0)
+  const { columns, tasks, addColumn, moveTask, reorderColumns, undo, redo, canUndo, canRedo } =
+    useKanbanStore(useShallow((state) => ({
+      columns: state.columns,
+      tasks: state.tasks,
+      addColumn: state.addColumn,
+      moveTask: state.moveTask,
+      reorderColumns: state.reorderColumns,
+      undo: state.undo,
+      redo: state.redo,
+      canUndo: state.past.length > 0,
+      canRedo: state.future.length > 0,
+    })))
 
   const [columnTitle, setColumnTitle] = useState('')
   const [selectedTaskId, setSelectedTaskId] = useState<Id | null>(null)
