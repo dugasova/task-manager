@@ -1,75 +1,51 @@
-# React + TypeScript + Vite
+# LikeKanban
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A local kanban board built with React + TypeScript. Runs entirely in the browser: all data is stored in `localStorage`, no backend required.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Columns and tasks** — create, rename, delete; drag-and-drop columns and tasks between columns ([@dnd-kit](https://dndkit.com/)).
+- **Task card** — description, checklist with progress, priority (low/medium/high), colored labels.
+- **Labels** — create labels with a color picker, assign/remove them on tasks.
+- **Task archive** — archive and restore tasks without losing data.
+- **Undo/Redo** — history of changes across columns, tasks, and labels.
+- **Light/dark theme** — toggle with persisted choice, defaults to system preference.
+- **Persistence** — board state is automatically saved to `localStorage` (with a fallback for unavailable storage — private browsing, full quota).
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/) — build tool and dev server
+- [Zustand](https://zustand.docs.pmnd.rs/) — state management (slices pattern + `persist` middleware)
+- [@dnd-kit](https://dndkit.com/) — drag-and-drop
+- [Tailwind CSS 4](https://tailwindcss.com/) — styling
+- [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/) — tests
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project structure
 
 ```
+src/
+  components/           shared UI components (Button, Input, ErrorBoundary)
+  hooks/                shared hooks (useTheme, useInlineEdit)
+  lib/                  utilities (id generation)
+  features/
+    kanban/
+      components/       board components (KanbanBoard, KanbanColumn, TaskCard, ...)
+      store/
+        kanbanStore.ts  assembles the store from slices + persists to localStorage
+        slices/         columnsSlice, tasksSlice, labelsSlice, historySlice
+      types/             domain types (Column, Task, Label, ...)
+      constants.ts       color schemes for columns, labels, priorities
+```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev       # dev server with HMR
+npm run build     # type-check + production build
+npm run test      # run tests (vitest run)
+npm run test:watch
+npm run lint
+npm run preview   # preview the production build
 ```
